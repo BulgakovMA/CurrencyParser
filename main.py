@@ -1,8 +1,10 @@
 import requests
-from typing import Annotated, List
-from fastapi import FastAPI, Depends
+import uvicorn
+from typing import List
+from fastapi import FastAPI
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -42,9 +44,13 @@ def get_currency_rates(html, quantity: float) -> List[CurrencyRate]:
     return result
 
 @app.post("/currency/")
-async def user_input(currency_input: Annotated[CurrencyInput, Depends()]):
+async def user_input(currency_input: CurrencyInput) -> List[CurrencyRate]:
     url = "https://cbr.ru/currency_base/daily//"
     quantity = currency_input.quantity
     response = requests.get(url)
     rates = get_currency_rates(response, quantity)
     return rates
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
